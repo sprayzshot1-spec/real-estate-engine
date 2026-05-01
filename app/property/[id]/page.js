@@ -58,3 +58,4 @@ export default async function PropertyPage({ params }) {
 }
 
 // ... دوال generateStaticParams و generateMetadata تظل كما هي في الكود السابق
+
