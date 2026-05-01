@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import Link from 'next/link'; // أداة Next.js لحل مشكلة الروابط
+import Link from 'next/link';
 
 export default function HomePage() {
     const [allData, setAllData] = useState([]);
@@ -34,7 +34,6 @@ export default function HomePage() {
         setCurrentPage(1);
     };
 
-    // حل مشكلة window.location وتصفير الفلاتر برمجياً
     const resetFilters = () => {
         setFilters({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '' });
         setFilteredData(allData);
@@ -44,6 +43,23 @@ export default function HomePage() {
     const start = (currentPage - 1) * perPage;
     const pageData = filteredData.slice(start, start + perPage);
     const totalPages = Math.ceil(filteredData.length / perPage);
+
+    // --- هندسة الترقيم (Pagination Logic) ---
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = startPage + maxVisible - 1;
+
+    if (endPage > totalPages) {
+        endPage = totalPages;
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    const visiblePages = [];
+    for (let i = startPage; i <= endPage; i++) {
+        if (i >= 1 && i <= totalPages) {
+            visiblePages.push(i);
+        }
+    }
 
     return (
         <main style={{ padding: '20px', maxWidth: '1200px', margin: 'auto' }}>
@@ -56,6 +72,11 @@ export default function HomePage() {
                 </select>
                 <input type="number" placeholder="من سعر" value={filters.minPrice} onChange={e => setFilters({...filters, minPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
                 <input type="number" placeholder="إلى سعر" value={filters.maxPrice} onChange={e => setFilters({...filters, maxPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
+                
+                {/* إضافة فلاتر المساحة التي كانت ناقصة */}
+                <input type="number" placeholder="من مساحة" value={filters.minArea} onChange={e => setFilters({...filters, minArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
+                <input type="number" placeholder="إلى مساحة" value={filters.maxArea} onChange={e => setFilters({...filters, maxArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
+
                 <input type="text" placeholder="بحث في النص" value={filters.text} onChange={e => setFilters({...filters, text: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', flex: 1 }} />
                 <button onClick={applyFilters} style={{ padding: '10px 20px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>🔍 بحث</button>
                 <button onClick={resetFilters} style={{ padding: '10px 20px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>🔄 ريست</button>
@@ -71,7 +92,6 @@ export default function HomePage() {
                             <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{p.type} - {p.location}</h3>
                             <p style={{ margin: '5px 0' }}>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م²</p>
                         </div>
-                        {/* استخدام مكون Link الخاص بـ Next.js بدلاً من الرابط العادي */}
                         <Link href={`/property/${p.id}`} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
                             عرض التفاصيل
                         </Link>
@@ -79,14 +99,34 @@ export default function HomePage() {
                 ))}
             </div>
 
-            {/* التقسيم Pagination */}
-            <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '5px', flexWrap: 'wrap' }}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button key={page} onClick={() => setCurrentPage(page)} style={{ padding: '10px 15px', background: currentPage === page ? '#007bff' : '#eee', color: currentPage === page ? '#fff' : '#333', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-                        {page}
+            {/* التقسيم Pagination الجديد */}
+            {totalPages > 1 && (
+                <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px', flexWrap: 'wrap', direction: 'rtl' }}>
+                    
+                    {/* زر السابق */}
+                    <button 
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
+                        style={{ padding: '10px 15px', background: currentPage === 1 ? '#ddd' : '#eee', color: currentPage === 1 ? '#999' : '#333', border: 'none', borderRadius: '5px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                        ⬅ السابق
                     </button>
-                ))}
-            </div>
+
+                    {/* أرقام الصفحات (5 فقط) */}
+                    {visiblePages.map(page => (
+                        <button key={page} onClick={() => setCurrentPage(page)} style={{ padding: '10px 15px', background: currentPage === page ? '#007bff' : '#eee', color: currentPage === page ? '#fff' : '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            {page}
+                        </button>
+                    ))}
+
+                    {/* زر التالي */}
+                    <button 
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
+                        style={{ padding: '10px 15px', background: currentPage === totalPages ? '#ddd' : '#eee', color: currentPage === totalPages ? '#999' : '#333', border: 'none', borderRadius: '5px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                        التالي ➡
+                    </button>
+                </div>
+            )}
         </main>
     );
 }
