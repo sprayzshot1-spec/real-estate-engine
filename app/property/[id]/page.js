@@ -25,29 +25,6 @@ export async function generateMetadata({ params }) {
     };
 }
 
-{/* كود زر الواتساب الذكي */}
-<a 
-  href={`https://wa.me/201111174731?text=${encodeURIComponent(`مرحباً، أستفسر عن العقار رقم: ${property.id} - ${property.type} - ${property.location}`)}`} 
-  target="_blank" 
-  rel="noopener noreferrer"
-  style={{ 
-    display: 'inline-flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    padding: '12px 25px', 
-    background: '#25D366', 
-    color: '#fff', 
-    textDecoration: 'none', 
-    borderRadius: '8px', 
-    fontWeight: 'bold', 
-    marginTop: '15px',
-    fontSize: '1rem',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-  }}
->
-  📞 تواصل واتساب بخصوص العقار
-</a>
-
 export default async function PropertyPage({ params }) {
     const { id } = await params;
     const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json', { cache: 'no-store' });
@@ -60,7 +37,6 @@ export default async function PropertyPage({ params }) {
         <main style={{ padding: '20px', maxWidth: '900px', margin: 'auto', background: '#fff', marginTop: '30px', borderRadius: '15px', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', direction: 'rtl' }}>
             
             <div style={{ marginBottom: '15px' }}>
-                {/* تم استبدال a بـ Link هنا */}
                 <Link href="/" style={{textDecoration: 'none', color: '#007bff', fontWeight: 'bold'}}>← العودة للرئيسية</Link>
             </div>
 
@@ -85,13 +61,35 @@ export default async function PropertyPage({ params }) {
                 </div>
             </div>
 
-            <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '1.1rem', color: '#444', marginBottom: '30px' }}>
+            <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '1.1rem', color: '#444', marginBottom: '20px' }}>
                 {property.description}
             </div>
 
+            {/* زر الواتساب الذكي */}
+            <div style={{ marginBottom: '30px' }}>
+                <a 
+                    href={`https://wa.me/201111174731?text=${encodeURIComponent(`مرحباً، أستفسر عن العقار رقم: ${property.id} - ${property.type} في ${property.location}`)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                        display: 'block', 
+                        textAlign: 'center',
+                        padding: '15px', 
+                        background: '#25D366', 
+                        color: '#fff', 
+                        textDecoration: 'none', 
+                        borderRadius: '8px', 
+                        fontWeight: 'bold', 
+                        fontSize: '1.1rem',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    }}
+                >
+                    📞 تواصل واتساب بخصوص هذا العقار
+                </a>
+            </div>
+
             {property.video && property.video.startsWith('http') && (
-                <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px' }}>
-                    {/* الرابط الخارجي للفيديو يبقى a كما هو */}
+                <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
                     <a href={property.video} target="_blank" style={{
                         padding: '15px 40px',
                         background: '#e91e63',
