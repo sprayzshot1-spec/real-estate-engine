@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
 
         <footer style={{ marginTop: '50px', padding: '30px 20px', background: '#333', color: '#fff', textAlign: 'center' }}>
           <h3 style={{ marginBottom: '15px' }}>تواصل معنا</h3>
-          <p>📍 العنوان: </p>
+          <p>📍 Mr Broker </p>
           <p>📞 هاتف: 01111174731</p>
           <div style={{ marginTop: '20px' }}>
             {/* الروابط الخارجية تبقى a كما هي */}
