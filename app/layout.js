@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
     <html lang="ar" dir="rtl">
       <body style={{ margin: 0, padding: 0, fontFamily: 'Arial, sans-serif', background: '#f4f7f6' }}>
         
-        {/* HEADER التعديل هنا */}
+        {/* HEADER */}
         <nav style={{ 
           padding: '10px 20px', 
           background: '#fff', 
@@ -21,20 +21,14 @@ export default function RootLayout({ children }) {
           boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
         }}>
           
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '15px', textDecoration: 'none' }}>
-            {/* ضع الرابط الذي نسخته من موقعك هنا بدلاً من الرابط الطويل أدناه */}
+          {/* تم تعديل الرابط هنا ليوجه للموقع الرئيسي عند الضغط على اللوجو أو الاسم */}
+          <a href="https://www.mrbrokereg.com/" style={{ display: 'flex', alignItems: 'center', gap: '15px', textDecoration: 'none' }}>
             <img src="https://static.wixstatic.com/media/59f20f_8ffe43edd80f4ede995e885638e44762~mv2.jpg/v1/fill/w_104,h_78,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy2_adobe_express.jpg" alt="Mr Broker" style={{ height: '50px', objectFit: 'contain' }} />
             
             <span style={{ fontWeight: 'bold', fontSize: '1.6rem', color: '#007bff' }}>
               Mr Broker
             </span>
-          </Link>
-
-          <div style={{ fontSize: '0.9rem', color: '#666', textAlign: 'left' }}>
-            <div>Mr Broker</div>
-            <div style={{ fontWeight: 'bold', color: '#333' }}>01111174731</div>
-          </div>
-        </nav>
+          </a>
 
           <div style={{ fontSize: '0.9rem', color: '#666', textAlign: 'left' }}>
             <div>ماستر بروكر</div>
@@ -44,7 +38,7 @@ export default function RootLayout({ children }) {
 
         {children}
 
-        {/* FOOTER يمكنك تعديل أي معلومة خاطئة هنا أيضاً */}
+        {/* FOOTER */}
         <footer style={{ marginTop: '50px', padding: '40px 20px', background: '#333', color: '#fff', textAlign: 'center' }}>
           <h3 style={{ marginBottom: '15px' }}>تواصل معنا</h3>
           <p>📍 Mr Broker</p>
