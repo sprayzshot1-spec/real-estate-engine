@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata = {
   title: 'Mr Broker',
@@ -52,6 +53,7 @@ export default function RootLayout({ children }) {
           </div>
           <p style={{ marginTop: '30px', fontSize: '0.8rem', opacity: 0.6 }}>© 2026 جميع الحقوق محفوظة Mr Broker</p>
         </footer>
+        <Analytics />
       </body>
     </html>
   )
