@@ -8,6 +8,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        {/* وسم التحقق من Google Search Console */}
+        <meta name="google-site-verification" content="uKjx5M2o6tvYJ0gHhhZVcHiy25HNtUZZmMoDda6lmmA" />
+      </head>
       <body style={{ margin: 0, padding: 0, fontFamily: 'Arial, sans-serif', background: '#f4f7f6' }}>
         
         {/* HEADER */}
@@ -21,7 +25,6 @@ export default function RootLayout({ children }) {
           boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
         }}>
           
-          {/* تم تعديل الرابط هنا ليوجه للموقع الرئيسي عند الضغط على اللوجو أو الاسم */}
           <a href="https://www.mrbrokereg.com/" style={{ display: 'flex', alignItems: 'center', gap: '15px', textDecoration: 'none' }}>
             <img src="https://static.wixstatic.com/media/59f20f_8ffe43edd80f4ede995e885638e44762~mv2.jpg/v1/fill/w_104,h_78,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy2_adobe_express.jpg" alt="Mr Broker" style={{ height: '50px', objectFit: 'contain' }} />
             
