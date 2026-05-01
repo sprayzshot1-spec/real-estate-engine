@@ -1,6 +1,6 @@
 export default async function HomePage() {
-    // جلب البيانات من ملف JSON
-    const res = await fetch('https://sprayzshot1-spec.github.io/properties3/properties.json', { cache: 'no-store' });
+    // استخدام الرابط الخام المباشر من GitHub
+    const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json', { cache: 'no-store' });
     const properties = await res.json();
 
     return (
