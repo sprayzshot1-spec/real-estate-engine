@@ -1,3 +1,16 @@
+import { Analytics } from '@vercel/analytics/next'; // 1. أضف هذا في الأعلى
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="ar" dir="rtl">
+      <body>
+        {children}
+        <Analytics /> {/* 2. أضف هذا قبل إغلاق وسم body */}
+      </body>
+    </html>
+  );
+}
+
 import Link from 'next/link';
 
 export const metadata = {
@@ -56,3 +69,4 @@ export default function RootLayout({ children }) {
     </html>
   )
 }
+
