@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
           </Link>
 
           <div style={{ fontSize: '0.9rem', color: '#666', textAlign: 'left' }}>
-            <div>أ/ عزة أبو الحسن</div>
+            <div>ماستر بروكر</div>
             <div style={{ fontWeight: 'bold', color: '#333' }}>01111174731</div>
           </div>
         </nav>
