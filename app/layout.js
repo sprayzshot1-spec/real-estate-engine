@@ -21,14 +21,20 @@ export default function RootLayout({ children }) {
           boxShadow: '0 2px 5px rgba(0,0,0,0.1)' 
         }}>
           
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            {/* إذا رفعت صورة باسم logo.png، قم بتفعيل السطر التالي واحذف نص البرج العقاري */}
-            {/* <img src="/logo.png" alt="اللوجو" style={{ height: '50px' }} /> */}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '15px', textDecoration: 'none' }}>
+            {/* ضع الرابط الذي نسخته من موقعك هنا بدلاً من الرابط الطويل أدناه */}
+            <img src="https://static.wixstatic.com/media/59f20f_8ffe43edd80f4ede995e885638e44762~mv2.jpg/v1/fill/w_104,h_78,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy2_adobe_express.jpg" alt="Mr Broker" style={{ height: '50px', objectFit: 'contain' }} />
             
             <span style={{ fontWeight: 'bold', fontSize: '1.6rem', color: '#007bff' }}>
-              🏠 Mr Broker
+              Mr Broker
             </span>
           </Link>
+
+          <div style={{ fontSize: '0.9rem', color: '#666', textAlign: 'left' }}>
+            <div>Mr Broker</div>
+            <div style={{ fontWeight: 'bold', color: '#333' }}>01111174731</div>
+          </div>
+        </nav>
 
           <div style={{ fontSize: '0.9rem', color: '#666', textAlign: 'left' }}>
             <div>ماستر بروكر</div>
