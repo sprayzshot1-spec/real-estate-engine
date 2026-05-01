@@ -11,7 +11,7 @@ export default function RootLayout({ children }) {
       <body style={{ margin: 0, padding: 0, fontFamily: 'Arial, sans-serif', background: '#f4f7f6' }}>
         <nav style={{ padding: '15px 20px', background: '#fff', borderBottom: '2px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
           {/* تم استبدال a بـ Link هنا لتوافق Next.js */}
-          <Link href="/" style={{ fontWeight: 'bold', fontSize: '1.5rem', textDecoration: 'none', color: '#007bff' }}>🏠 عقارات البرج</Link>
+          <Link href="/" style={{ fontWeight: 'bold', fontSize: '1.5rem', textDecoration: 'none', color: '#007bff' }}>🏠 Mr Broker</Link>
         </nav>
 
         {children}
