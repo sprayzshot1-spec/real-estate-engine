@@ -1,17 +1,5 @@
-import { Analytics } from '@vercel/analytics/next'; // 1. أضف هذا في الأعلى
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="ar" dir="rtl">
-      <body>
-        {children}
-        <Analytics /> {/* 2. أضف هذا قبل إغلاق وسم body */}
-      </body>
-    </html>
-  );
-}
-
 import Link from 'next/link';
+import { Analytics } from '@vercel/analytics/next'; // تم إضافة هذا السطر
 
 export const metadata = {
   title: 'Mr Broker',
@@ -65,8 +53,10 @@ export default function RootLayout({ children }) {
           </div>
           <p style={{ marginTop: '30px', fontSize: '0.8rem', opacity: 0.6 }}>© 2026 جميع الحقوق محفوظة Mr Broker</p>
         </footer>
+        
+        {/* تم إضافة هذا السطر */}
+        <Analytics />
       </body>
     </html>
   )
 }
-
