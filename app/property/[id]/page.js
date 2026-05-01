@@ -25,6 +25,29 @@ export async function generateMetadata({ params }) {
     };
 }
 
+{/* كود زر الواتساب الذكي */}
+<a 
+  href={`https://wa.me/201111174731?text=${encodeURIComponent(`مرحباً، أستفسر عن العقار رقم: ${property.id} - ${property.type} - ${property.location}`)}`} 
+  target="_blank" 
+  rel="noopener noreferrer"
+  style={{ 
+    display: 'inline-flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    padding: '12px 25px', 
+    background: '#25D366', 
+    color: '#fff', 
+    textDecoration: 'none', 
+    borderRadius: '8px', 
+    fontWeight: 'bold', 
+    marginTop: '15px',
+    fontSize: '1rem',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+  }}
+>
+  📞 تواصل واتساب بخصوص العقار
+</a>
+
 export default async function PropertyPage({ params }) {
     const { id } = await params;
     const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json', { cache: 'no-store' });
