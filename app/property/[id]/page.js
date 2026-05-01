@@ -1,5 +1,5 @@
 export async function generateStaticParams() {
-    const res = await fetch('https://sprayzshot1-spec.github.io/properties3/properties.json?v=' + Date.now());
+    const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json');
     const properties = await res.json();
     return properties.map((p) => ({
         id: p.id.toString(),
@@ -7,7 +7,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-    const res = await fetch('https://sprayzshot1-spec.github.io/properties3/properties.json');
+    const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json');
     const properties = await res.json();
     const property = properties.find(p => p.id.toString() === params.id);
     
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function PropertyPage({ params }) {
-    const res = await fetch('https://sprayzshot1-spec.github.io/properties3/properties.json');
+    const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json');
     const properties = await res.json();
     const property = properties.find(p => p.id.toString() === params.id);
 
