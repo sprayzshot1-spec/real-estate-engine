@@ -7,10 +7,9 @@ export default function HomePage() {
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // تم إضافة مصفوفة 'locations' لاحتواء المناطق المتعددة
-    const [filters, setFilters] = useState({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [] });
+    // ✅ أضفنا share هنا فقط
+    const [filters, setFilters] = useState({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
     
-    // للتحكم في فتح وإغلاق قائمة المناطق
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const dropdownRef = useRef(null);
     
@@ -26,7 +25,6 @@ export default function HomePage() {
             .catch(err => console.error("Error fetching data:", err));
     }, []);
 
-    // إغلاق قائمة المناطق عند الضغط خارجها
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -37,15 +35,13 @@ export default function HomePage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // استخراج أسماء المناطق بدون تكرار
     const uniqueLocations = [...new Set(allData.map(p => p.location))].filter(Boolean);
 
-    // دالة التعامل مع تحديد وإلغاء تحديد المناطق
     const handleLocationChange = (loc) => {
         setFilters(prev => {
             const newLocs = prev.locations.includes(loc)
-                ? prev.locations.filter(l => l !== loc) // إزالة إذا كانت محددة مسبقاً
-                : [...prev.locations, loc]; // إضافة إذا كانت جديدة
+                ? prev.locations.filter(l => l !== loc)
+                : [...prev.locations, loc];
             return { ...prev, locations: newLocs };
         });
     };
@@ -59,19 +55,23 @@ export default function HomePage() {
             if (filters.minArea && p.area < filters.minArea) return false;
             if (filters.maxArea && p.area > filters.maxArea) return false;
             if (filters.text && !p.description.includes(filters.text)) return false;
-            
-            // فلترة المناطق المتعددة (إذا اختار المستخدم مناطق، يجب أن يكون العقار في إحداها)
+
             if (filters.locations.length > 0 && !filters.locations.includes(p.location)) return false;
-            
+
+            // ✅ فلتر المشاركة
+            if (filters.share === "yes" && !p.share) return false;
+            if (filters.share === "no" && p.share) return false;
+
             return true;
         });
+
         setFilteredData(data);
         setCurrentPage(1);
-        setIsLocationOpen(false); // إغلاق القائمة بعد البحث
+        setIsLocationOpen(false);
     };
 
     const resetFilters = () => {
-        setFilters({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [] });
+        setFilters({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
         setFilteredData(allData);
         setCurrentPage(1);
     };
@@ -80,7 +80,6 @@ export default function HomePage() {
     const pageData = filteredData.slice(start, start + perPage);
     const totalPages = Math.ceil(filteredData.length / perPage);
 
-    // --- هندسة الترقيم (Pagination Logic) ---
     const maxVisible = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
@@ -99,7 +98,7 @@ export default function HomePage() {
 
     return (
         <main style={{ padding: '20px', maxWidth: '1200px', margin: 'auto' }}>
-            {/* شريط الفلاتر */}
+            
             <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', marginBottom: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                 
                 <input type="number" placeholder="رقم الكود" value={filters.searchID} onChange={e => setFilters({...filters, searchID: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '90px' }} />
@@ -109,93 +108,59 @@ export default function HomePage() {
                     {[...new Set(allData.map(p => p.type))].map(t => <option key={t}>{t}</option>)}
                 </select>
 
-                {/* --- مكون فلتر المناطق (Excel Style) --- */}
+                {/* ✅ فلتر المشاركة الجديد */}
+                <select value={filters.share} onChange={e => setFilters({...filters, share: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                    <option value="">مشاركة / الكل</option>
+                    <option value="yes">مشاركة فقط</option>
+                    <option value="no">بدون مشاركة</option>
+                </select>
+
                 <div ref={dropdownRef} style={{ position: 'relative', minWidth: '150px' }}>
-                    <div 
-                        onClick={() => setIsLocationOpen(!isLocationOpen)}
-                        style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', background: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                    >
+                    <div onClick={() => setIsLocationOpen(!isLocationOpen)} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', background: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.9rem', color: filters.locations.length ? '#007bff' : '#555', fontWeight: filters.locations.length ? 'bold' : 'normal' }}>
                             {filters.locations.length > 0 ? `تم تحديد (${filters.locations.length}) مناطق` : 'اختر المناطق'}
                         </span>
-                        <span style={{ fontSize: '0.8rem', marginLeft: '5px' }}>▼</span>
+                        <span>▼</span>
                     </div>
-                    
+
                     {isLocationOpen && (
-                        <div style={{ position: 'absolute', top: '100%', right: 0, left: 0, marginTop: '5px', background: '#fff', border: '1px solid #ddd', borderRadius: '5px', zIndex: 1000, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+                        <div style={{ position: 'absolute', top: '100%', right: 0, left: 0, marginTop: '5px', background: '#fff', border: '1px solid #ddd', borderRadius: '5px', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
                             {uniqueLocations.map(loc => (
-                                <label key={loc} style={{ display: 'flex', alignItems: 'center', padding: '10px', borderBottom: '1px solid #eee', cursor: 'pointer', margin: 0 }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={filters.locations.includes(loc)}
-                                        onChange={() => handleLocationChange(loc)}
-                                        style={{ marginLeft: '10px', cursor: 'pointer' }}
-                                    />
-                                    <span style={{ fontSize: '0.9rem', color: '#333' }}>{loc}</span>
+                                <label key={loc} style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
+                                    <input type="checkbox" checked={filters.locations.includes(loc)} onChange={() => handleLocationChange(loc)} />
+                                    <span>{loc}</span>
                                 </label>
                             ))}
                         </div>
                     )}
                 </div>
-                {/* ------------------------------------- */}
 
-                <input type="number" placeholder="من سعر" value={filters.minPrice} onChange={e => setFilters({...filters, minPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
-                <input type="number" placeholder="إلى سعر" value={filters.maxPrice} onChange={e => setFilters({...filters, maxPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
-                
-                <input type="number" placeholder="من مساحة" value={filters.minArea} onChange={e => setFilters({...filters, minArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
-                <input type="number" placeholder="إلى مساحة" value={filters.maxArea} onChange={e => setFilters({...filters, maxArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
-
-                <input type="text" placeholder="بحث في الوصف..." value={filters.text} onChange={e => setFilters({...filters, text: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', flex: 1, minWidth: '150px' }} />
-                
-                <button onClick={applyFilters} style={{ padding: '10px 20px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>🔍 بحث</button>
-                <button onClick={resetFilters} style={{ padding: '10px 20px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>🔄 ريست</button>
+                <button onClick={applyFilters} style={{ padding: '10px 20px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '5px' }}>🔍 بحث</button>
+                <button onClick={resetFilters} style={{ padding: '10px 20px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}>🔄 ريست</button>
             </div>
 
-            <p style={{fontWeight: 'bold', color: '#555', marginBottom: '15px'}}>إجمالي النتائج: {filteredData.length}</p>
+            <p>إجمالي النتائج: {filteredData.length}</p>
 
-            {/* عرض العقارات */}
             <div style={{ display: 'grid', gap: '20px' }}>
                 {pageData.map(p => (
-                    <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap:'15px' }}>
-                        <div>
-                            <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{p.type} - {p.location}</h3>
-                            <p style={{ margin: '5px 0', color: '#555' }}>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م²</p>
-                        </div>
-                        <Link href={`/property/${p.id}`} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
+                    <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd' }}>
+                        
+                        <h3>{p.type} - {p.location}</h3>
+                        <p>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م²</p>
+
+                        {/* ✅ إظهار مشاركة */}
+                        {p.share && (
+                            <div style={{ color: '#007bff', fontWeight: 'bold' }}>
+                                🔵 مشاركة
+                            </div>
+                        )}
+
+                        <Link href={`/property/${p.id}`}>
                             عرض التفاصيل
                         </Link>
                     </div>
                 ))}
             </div>
-
-            {/* التقسيم Pagination الجديد */}
-            {totalPages > 1 && (
-                <div style={{ marginTop: '40px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px', flexWrap: 'wrap', direction: 'rtl' }}>
-                    
-                    {/* زر السابق */}
-                    <button 
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
-                        style={{ padding: '10px 15px', background: currentPage === 1 ? '#ddd' : '#eee', color: currentPage === 1 ? '#999' : '#333', border: 'none', borderRadius: '5px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                        ⬅ السابق
-                    </button>
-
-                    {/* أرقام الصفحات (5 فقط) */}
-                    {visiblePages.map(page => (
-                        <button key={page} onClick={() => setCurrentPage(page)} style={{ padding: '10px 15px', background: currentPage === page ? '#007bff' : '#eee', color: currentPage === page ? '#fff' : '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
-                            {page}
-                        </button>
-                    ))}
-
-                    {/* زر التالي */}
-                    <button 
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
-                        style={{ padding: '10px 15px', background: currentPage === totalPages ? '#ddd' : '#eee', color: currentPage === totalPages ? '#999' : '#333', border: 'none', borderRadius: '5px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
-                        التالي ➡
-                    </button>
-                </div>
-            )}
         </main>
     );
 }
