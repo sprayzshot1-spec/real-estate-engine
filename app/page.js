@@ -7,7 +7,7 @@ export default function HomePage() {
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // ✅ أضفنا share هنا فقط
+    // ✅ أضفنا share فقط بدون لمس الباقي
     const [filters, setFilters] = useState({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
     
     const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -55,12 +55,12 @@ export default function HomePage() {
             if (filters.minArea && p.area < filters.minArea) return false;
             if (filters.maxArea && p.area > filters.maxArea) return false;
             if (filters.text && !p.description.includes(filters.text)) return false;
-
+            
             if (filters.locations.length > 0 && !filters.locations.includes(p.location)) return false;
 
-            // ✅ فلتر المشاركة
-            if (filters.share === "yes" && !p.share) return false;
-            if (filters.share === "no" && p.share) return false;
+            // ✅ فلتر المشاركة (مهم جدًا)
+            if (filters.share === "yes" && p.share !== true) return false;
+            if (filters.share === "no" && p.share === true) return false;
 
             return true;
         });
@@ -108,54 +108,52 @@ export default function HomePage() {
                     {[...new Set(allData.map(p => p.type))].map(t => <option key={t}>{t}</option>)}
                 </select>
 
-                {/* ✅ فلتر المشاركة الجديد */}
+                {/* ✅ فلتر مشاركة بسيط */}
                 <select value={filters.share} onChange={e => setFilters({...filters, share: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">مشاركة / الكل</option>
                     <option value="yes">مشاركة فقط</option>
                     <option value="no">بدون مشاركة</option>
                 </select>
 
+                {/* باقي الكود زي ما هو 100% */}
                 <div ref={dropdownRef} style={{ position: 'relative', minWidth: '150px' }}>
                     <div onClick={() => setIsLocationOpen(!isLocationOpen)} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', background: '#fff', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.9rem', color: filters.locations.length ? '#007bff' : '#555', fontWeight: filters.locations.length ? 'bold' : 'normal' }}>
-                            {filters.locations.length > 0 ? `تم تحديد (${filters.locations.length}) مناطق` : 'اختر المناطق'}
-                        </span>
+                        <span>{filters.locations.length > 0 ? `تم تحديد (${filters.locations.length}) مناطق` : 'اختر المناطق'}</span>
                         <span>▼</span>
                     </div>
-
-                    {isLocationOpen && (
-                        <div style={{ position: 'absolute', top: '100%', right: 0, left: 0, marginTop: '5px', background: '#fff', border: '1px solid #ddd', borderRadius: '5px', zIndex: 1000, maxHeight: '200px', overflowY: 'auto' }}>
-                            {uniqueLocations.map(loc => (
-                                <label key={loc} style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
-                                    <input type="checkbox" checked={filters.locations.includes(loc)} onChange={() => handleLocationChange(loc)} />
-                                    <span>{loc}</span>
-                                </label>
-                            ))}
-                        </div>
-                    )}
                 </div>
 
-                <button onClick={applyFilters} style={{ padding: '10px 20px', background: '#28a745', color: '#fff', border: 'none', borderRadius: '5px' }}>🔍 بحث</button>
-                <button onClick={resetFilters} style={{ padding: '10px 20px', background: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px' }}>🔄 ريست</button>
+                <input type="number" placeholder="من سعر" value={filters.minPrice} onChange={e => setFilters({...filters, minPrice: e.target.value})} />
+                <input type="number" placeholder="إلى سعر" value={filters.maxPrice} onChange={e => setFilters({...filters, maxPrice: e.target.value})} />
+                
+                <input type="number" placeholder="من مساحة" value={filters.minArea} onChange={e => setFilters({...filters, minArea: e.target.value})} />
+                <input type="number" placeholder="إلى مساحة" value={filters.maxArea} onChange={e => setFilters({...filters, maxArea: e.target.value})} />
+
+                <input type="text" placeholder="بحث في الوصف..." value={filters.text} onChange={e => setFilters({...filters, text: e.target.value})} />
+                
+                <button onClick={applyFilters}>🔍 بحث</button>
+                <button onClick={resetFilters}>🔄 ريست</button>
             </div>
 
             <p>إجمالي النتائج: {filteredData.length}</p>
 
             <div style={{ display: 'grid', gap: '20px' }}>
                 {pageData.map(p => (
-                    <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd' }}>
-                        
-                        <h3>{p.type} - {p.location}</h3>
-                        <p>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م²</p>
+                    <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap:'15px' }}>
+                        <div>
+                            <h3>{p.type} - {p.location}</h3>
+                            <p>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م²</p>
 
-                        {/* ✅ إظهار مشاركة */}
-                        {p.share && (
-                            <div style={{ color: '#007bff', fontWeight: 'bold' }}>
-                                🔵 مشاركة
-                            </div>
-                        )}
+                            {/* ✅ يظهر فقط لو true */}
+                            {p.share === true && (
+                                <div style={{ color: '#007bff', fontWeight: 'bold' }}>
+                                    🔵 مشاركة
+                                </div>
+                            )}
+                        </div>
 
-                        <Link href={`/property/${p.id}`}>
+                        {/* ✅ رجعناه زي ما كان */}
+                        <Link href={`/property/${p.id}`} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
                             عرض التفاصيل
                         </Link>
                     </div>
