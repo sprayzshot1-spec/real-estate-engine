@@ -7,10 +7,8 @@ export default function HomePage() {
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // تم إضافة متغير 'share' في الفلاتر
     const [filters, setFilters] = useState({ searchID: '', type: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
     
-    // للتحكم في فتح وإغلاق قائمة المناطق
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const dropdownRef = useRef(null);
     
@@ -26,7 +24,6 @@ export default function HomePage() {
             .catch(err => console.error("Error fetching data:", err));
     }, []);
 
-    // إغلاق قائمة المناطق عند الضغط خارجها
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -37,17 +34,29 @@ export default function HomePage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // استخراج أسماء المناطق بدون تكرار
     const uniqueLocations = [...new Set(allData.map(p => p.location))].filter(Boolean);
 
-    // دالة التعامل مع تحديد وإلغاء تحديد المناطق
     const handleLocationChange = (loc) => {
         setFilters(prev => {
             const newLocs = prev.locations.includes(loc)
-                ? prev.locations.filter(l => l !== loc) // إزالة إذا كانت محددة مسبقاً
-                : [...prev.locations, loc]; // إضافة إذا كانت جديدة
+                ? prev.locations.filter(l => l !== loc) 
+                : [...prev.locations, loc]; 
             return { ...prev, locations: newLocs };
         });
+    };
+
+    // --- الدالة الذكية الجديدة للتعامل مع مخرجات بايثون/إكسل ---
+    const isPropertyShared = (shareValue) => {
+        if (!shareValue) return false; // يلتقط القيم الفارغة و null و undefined و 0 و false
+        
+        if (typeof shareValue === 'string') {
+            const val = shareValue.trim().toLowerCase();
+            // الكلمات السلبية التي يولدها بايثون للخانات الفارغة في إكسل
+            if (val === 'false' || val === 'no' || val === '0' || val === 'لا' || val === 'بدون' || val === 'nan' || val === 'null') {
+                return false;
+            }
+        }
+        return true; // إذا تجاوز الشروط السابقة، فهو حتماً "مشاركة"
     };
 
     const applyFilters = () => {
@@ -60,18 +69,18 @@ export default function HomePage() {
             if (filters.maxArea && p.area > filters.maxArea) return false;
             if (filters.text && !p.description.includes(filters.text)) return false;
             
-            // فلترة المناطق المتعددة (إذا اختار المستخدم مناطق، يجب أن يكون العقار في إحداها)
             if (filters.locations.length > 0 && !filters.locations.includes(p.location)) return false;
             
-            // فلترة المشاركة الجديدة
-            if (filters.share === 'yes' && p.share !== true) return false;
-            if (filters.share === 'no' && p.share === true) return false;
+            // فلترة المشاركة بالاعتماد على الدالة الذكية
+            const isShared = isPropertyShared(p.share);
+            if (filters.share === 'yes' && !isShared) return false;
+            if (filters.share === 'no' && isShared) return false;
             
             return true;
         });
         setFilteredData(data);
         setCurrentPage(1);
-        setIsLocationOpen(false); // إغلاق القائمة بعد البحث
+        setIsLocationOpen(false); 
     };
 
     const resetFilters = () => {
@@ -84,7 +93,6 @@ export default function HomePage() {
     const pageData = filteredData.slice(start, start + perPage);
     const totalPages = Math.ceil(filteredData.length / perPage);
 
-    // --- هندسة الترقيم (Pagination Logic) ---
     const maxVisible = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = startPage + maxVisible - 1;
@@ -103,7 +111,6 @@ export default function HomePage() {
 
     return (
         <main style={{ padding: '20px', maxWidth: '1200px', margin: 'auto' }}>
-            {/* شريط الفلاتر */}
             <div style={{ background: '#fff', padding: '20px', borderRadius: '10px', marginBottom: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                 
                 <input type="number" placeholder="رقم الكود" value={filters.searchID} onChange={e => setFilters({...filters, searchID: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '90px' }} />
@@ -113,14 +120,12 @@ export default function HomePage() {
                     {[...new Set(allData.map(p => p.type))].map(t => <option key={t}>{t}</option>)}
                 </select>
 
-                {/* --- فلتر المشاركة الجديد --- */}
                 <select value={filters.share} onChange={e => setFilters({...filters, share: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">حالة المشاركة (الكل)</option>
                     <option value="yes">مشاركة فقط</option>
                     <option value="no">بدون مشاركة</option>
                 </select>
 
-                {/* --- مكون فلتر المناطق (Excel Style) --- */}
                 <div ref={dropdownRef} style={{ position: 'relative', minWidth: '150px' }}>
                     <div 
                         onClick={() => setIsLocationOpen(!isLocationOpen)}
@@ -148,7 +153,6 @@ export default function HomePage() {
                         </div>
                     )}
                 </div>
-                {/* ------------------------------------- */}
 
                 <input type="number" placeholder="من سعر" value={filters.minPrice} onChange={e => setFilters({...filters, minPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
                 <input type="number" placeholder="إلى سعر" value={filters.maxPrice} onChange={e => setFilters({...filters, maxPrice: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
@@ -164,7 +168,6 @@ export default function HomePage() {
 
             <p style={{fontWeight: 'bold', color: '#555', marginBottom: '15px'}}>إجمالي النتائج: {filteredData.length}</p>
 
-            {/* عرض العقارات */}
             <div style={{ display: 'grid', gap: '20px' }}>
                 {pageData.map(p => (
                     <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap:'15px' }}>
@@ -172,8 +175,8 @@ export default function HomePage() {
                             <h3 style={{ margin: '0 0 10px 0', color: '#333', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                                 <span>{p.type} - {p.location}</span>
                                 
-                                {/* --- علامة المشاركة تظهر فقط إذا كان share: true --- */}
-                                {p.share && (
+                                {/* إظهار علامة المشاركة باستخدام الدالة الذكية */}
+                                {isPropertyShared(p.share) && (
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#e0f2ff', color: '#0056b3', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
                                         <span style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
                                         مشاركة
@@ -189,11 +192,9 @@ export default function HomePage() {
                 ))}
             </div>
 
-            {/* التقسيم Pagination الجديد */}
             {totalPages > 1 && (
                 <div style={{ marginTop: '40px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '5px', flexWrap: 'wrap', direction: 'rtl' }}>
                     
-                    {/* زر السابق */}
                     <button 
                         disabled={currentPage === 1}
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} 
@@ -201,14 +202,12 @@ export default function HomePage() {
                         ⬅ السابق
                     </button>
 
-                    {/* أرقام الصفحات (5 فقط) */}
                     {visiblePages.map(page => (
                         <button key={page} onClick={() => setCurrentPage(page)} style={{ padding: '10px 15px', background: currentPage === page ? '#007bff' : '#eee', color: currentPage === page ? '#fff' : '#333', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
                             {page}
                         </button>
                     ))}
 
-                    {/* زر التالي */}
                     <button 
                         disabled={currentPage === totalPages}
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} 
