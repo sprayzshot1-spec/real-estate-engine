@@ -1,5 +1,18 @@
 import Link from 'next/link';
 
+// الدالة الذكية لمعالجة قيم المشاركة
+const isPropertyShared = (shareValue) => {
+    if (!shareValue) return false; 
+    
+    if (typeof shareValue === 'string') {
+        const val = shareValue.trim().toLowerCase();
+        if (val === 'false' || val === 'no' || val === '0' || val === 'لا' || val === 'بدون' || val === 'nan' || val === 'null') {
+            return false;
+        }
+    }
+    return true; 
+};
+
 export async function generateStaticParams() {
     try {
         const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json', { next: { revalidate: 60 } });
@@ -40,10 +53,20 @@ export default async function PropertyPage({ params }) {
                 <Link href="/" style={{textDecoration: 'none', color: '#007bff', fontWeight: 'bold'}}>← العودة للرئيسية</Link>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f0f0f0', paddingBottom: '15px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f0f0f0', paddingBottom: '15px', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <div>
-                    <h1 style={{ margin: 0, color: '#2c3e50' }}>{property.type}</h1>
-                    <p style={{ fontSize: '1.2rem', color: '#666', margin: '5px 0' }}>📍 {property.location}</p>
+                    <h1 style={{ margin: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                        <span>{property.type}</span>
+                        
+                        {/* إظهار علامة المشاركة إذا كانت الدالة ترجع true */}
+                        {isPropertyShared(property.share) && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2ff', color: '#0056b3', padding: '6px 16px', borderRadius: '25px', fontSize: '1.1rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
+                                <span style={{ width: '10px', height: '10px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
+                                مشاركة
+                            </span>
+                        )}
+                    </h1>
+                    <p style={{ fontSize: '1.2rem', color: '#666', margin: '10px 0 5px 0' }}>📍 {property.location}</p>
                 </div>
                 <div style={{ background: '#007bff', color: 'white', padding: '10px 20px', borderRadius: '8px', fontSize: '1.2rem', fontWeight: 'bold' }}>
                     ID: {property.id}
