@@ -55,14 +55,22 @@ export default async function PropertyPage({ params }) {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f0f0f0', paddingBottom: '15px', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
                 <div>
-                    <h1 style={{ margin: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                    <h1 style={{ margin: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                         <span>{property.type}</span>
                         
-                        {/* إظهار علامة المشاركة إذا كانت الدالة ترجع true */}
+                        {/* علامة المشاركة */}
                         {isPropertyShared(property.share) && (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2ff', color: '#0056b3', padding: '6px 16px', borderRadius: '25px', fontSize: '1.1rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
-                                <span style={{ width: '10px', height: '10px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2ff', color: '#0056b3', padding: '6px 16px', borderRadius: '25px', fontSize: '0.9rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
+                                <span style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
                                 مشاركة
+                            </span>
+                        )}
+
+                        {/* علامة الكمبوند - تظهر فقط إذا كان الحقل يحتوي على بيانات */}
+                        {property.compound && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e6fffa', color: '#008b8b', padding: '6px 16px', borderRadius: '25px', fontSize: '0.9rem', fontWeight: 'bold', border: '1px solid #b2f5ea' }}>
+                                <span style={{ width: '8px', height: '8px', backgroundColor: '#008b8b', borderRadius: '50%' }}></span>
+                                كمبوند: {property.compound}
                             </span>
                         )}
                     </h1>
@@ -73,15 +81,32 @@ export default async function PropertyPage({ params }) {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '30px', background: '#f8f9fa', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
-                <div style={{ textAlign: 'center' }}>
+            {/* قسم ملخص البيانات - المساحة، السعر، الغرف، الحمامات */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', background: '#f8f9fa', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
+                <div style={{ textAlign: 'center', minWidth: '80px' }}>
                     <span style={{ display: 'block', color: '#888' }}>المساحة</span>
-                    <strong style={{ fontSize: '1.3rem' }}>{property.area} م²</strong>
+                    <strong style={{ fontSize: '1.3rem' }}>📏 {property.area} م²</strong>
                 </div>
-                <div style={{ textAlign: 'center' }}>
+                <div style={{ textAlign: 'center', minWidth: '100px' }}>
                     <span style={{ display: 'block', color: '#888' }}>السعر</span>
-                    <strong style={{ fontSize: '1.3rem', color: '#28a745' }}>{property.price.toLocaleString()} ج.م</strong>
+                    <strong style={{ fontSize: '1.3rem', color: '#28a745' }}>💰 {property.price.toLocaleString()} ج.م</strong>
                 </div>
+                
+                {/* إظهار الغرف فقط إذا كانت أكبر من 0 */}
+                {property.rooms > 0 && (
+                    <div style={{ textAlign: 'center', minWidth: '80px' }}>
+                        <span style={{ display: 'block', color: '#888' }}>الغرف</span>
+                        <strong style={{ fontSize: '1.3rem' }}>🛏️ {property.rooms}</strong>
+                    </div>
+                )}
+
+                {/* إظهار الحمامات فقط إذا كانت أكبر من 0 */}
+                {property.baths > 0 && (
+                    <div style={{ textAlign: 'center', minWidth: '80px' }}>
+                        <span style={{ display: 'block', color: '#888' }}>الحمامات</span>
+                        <strong style={{ fontSize: '1.3rem' }}>🛁 {property.baths}</strong>
+                    </div>
+                )}
             </div>
 
             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '1.1rem', color: '#444', marginBottom: '20px' }}>
@@ -123,7 +148,7 @@ export default async function PropertyPage({ params }) {
                         fontWeight: 'bold',
                         boxShadow: '0 4px 10px rgba(233, 30, 99, 0.3)'
                     }}>
-                        🎥 مشاهدة الفيديو
+                        🎥 مشاهدة الفيديو أو الصور
                     </a>
                 </div>
             )}
