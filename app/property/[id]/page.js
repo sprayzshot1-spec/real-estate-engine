@@ -13,6 +13,25 @@ const isPropertyShared = (shareValue) => {
     return true; 
 };
 
+// الدالة الجديدة: لتحويل أي رابط نصي داخل الوصف إلى رابط قابل للضغط
+const renderDescriptionWithLinks = (text) => {
+    if (!text) return null;
+    // رادار البحث عن الروابط
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+    
+    return parts.map((part, index) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a key={index} href={part} target="_blank" rel="noopener noreferrer" style={{ color: '#007bff', textDecoration: 'underline', fontWeight: 'bold', direction: 'ltr', display: 'inline-block' }}>
+                    {part}
+                </a>
+            );
+        }
+        return part;
+    });
+};
+
 export async function generateStaticParams() {
     try {
         const res = await fetch('https://raw.githubusercontent.com/sprayzshot1-spec/properties3/main/properties.json', { next: { revalidate: 60 } });
@@ -66,7 +85,7 @@ export default async function PropertyPage({ params }) {
                             </span>
                         )}
 
-                        {/* علامة الكمبوند - تظهر فقط إذا كان الحقل يحتوي على بيانات */}
+                        {/* علامة الكمبوند */}
                         {property.compound && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e6fffa', color: '#008b8b', padding: '6px 16px', borderRadius: '25px', fontSize: '0.9rem', fontWeight: 'bold', border: '1px solid #b2f5ea' }}>
                                 <span style={{ width: '8px', height: '8px', backgroundColor: '#008b8b', borderRadius: '50%' }}></span>
@@ -81,7 +100,7 @@ export default async function PropertyPage({ params }) {
                 </div>
             </div>
 
-            {/* قسم ملخص البيانات - المساحة، السعر، الغرف، الحمامات */}
+            {/* قسم ملخص البيانات */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', background: '#f8f9fa', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center', minWidth: '80px' }}>
                     <span style={{ display: 'block', color: '#888' }}>المساحة</span>
@@ -92,7 +111,6 @@ export default async function PropertyPage({ params }) {
                     <strong style={{ fontSize: '1.3rem', color: '#28a745' }}>💰 {property.price.toLocaleString()} ج.م</strong>
                 </div>
                 
-                {/* إظهار الغرف فقط إذا كانت أكبر من 0 */}
                 {property.rooms > 0 && (
                     <div style={{ textAlign: 'center', minWidth: '80px' }}>
                         <span style={{ display: 'block', color: '#888' }}>الغرف</span>
@@ -100,7 +118,6 @@ export default async function PropertyPage({ params }) {
                     </div>
                 )}
 
-                {/* إظهار الحمامات فقط إذا كانت أكبر من 0 */}
                 {property.baths > 0 && (
                     <div style={{ textAlign: 'center', minWidth: '80px' }}>
                         <span style={{ display: 'block', color: '#888' }}>الحمامات</span>
@@ -109,8 +126,9 @@ export default async function PropertyPage({ params }) {
                 )}
             </div>
 
+            {/* تم تحديث هذا الجزء ليقرأ الروابط باستخدام الدالة الجديدة */}
             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '1.1rem', color: '#444', marginBottom: '20px' }}>
-                {property.description}
+                {renderDescriptionWithLinks(property.description)}
             </div>
 
             {/* زر الواتساب الذكي */}
