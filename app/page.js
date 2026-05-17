@@ -7,8 +7,12 @@ export default function HomePage() {
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // 1. إضافة المتغيرات الجديدة للـ State (compound, rooms, baths)
-    const [filters, setFilters] = useState({ searchID: '', type: '', compound: '', rooms: '', baths: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
+    // 1. تحديث متغيرات الفلاتر لتشمل الفلترين الجديدين (transactionType, hasVideo)
+    const [filters, setFilters] = useState({ 
+        searchID: '', type: '', compound: '', rooms: '', baths: '', 
+        minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', 
+        locations: [], share: '', transactionType: '', hasVideo: '' 
+    });
     
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -36,8 +40,6 @@ export default function HomePage() {
     }, []);
 
     const uniqueLocations = [...new Set(allData.map(p => p.location))].filter(Boolean);
-    
-    // استخراج أسماء الكمبوندات الفريدة لملء القائمة المنسدلة تلقائياً
     const uniqueCompounds = [...new Set(allData.map(p => p.compound))].filter(Boolean);
 
     const handleLocationChange = (loc) => {
@@ -51,7 +53,6 @@ export default function HomePage() {
 
     const isPropertyShared = (shareValue) => {
         if (!shareValue) return false; 
-        
         if (typeof shareValue === 'string') {
             const val = shareValue.trim().toLowerCase();
             if (val === 'false' || val === 'no' || val === '0' || val === 'لا' || val === 'بدون' || val === 'nan' || val === 'null') {
@@ -71,19 +72,19 @@ export default function HomePage() {
             if (filters.maxArea && p.area > filters.maxArea) return false;
             if (filters.text && !p.description.includes(filters.text)) return false;
             if (filters.locations.length > 0 && !filters.locations.includes(p.location)) return false;
-            
-            // 2. تطبيق فلتر الكمبوند (مطابقة تامة)
             if (filters.compound && p.compound !== filters.compound) return false;
-            
-            // 3. تطبيق فلتر الغرف (أكبر من أو يساوي)
             if (filters.rooms && p.rooms < parseInt(filters.rooms)) return false;
-            
-            // 4. تطبيق فلتر الحمامات (أكبر من أو يساوي)
             if (filters.baths && p.baths < parseInt(filters.baths)) return false;
             
             const isShared = isPropertyShared(p.share);
             if (filters.share === 'yes' && !isShared) return false;
             if (filters.share === 'no' && isShared) return false;
+            
+            // 🎯 تطبيق فلتر نوع المعاملة الجديد (متاح / مطلوب)
+            if (filters.transactionType && p.transaction_type !== filters.transactionType) return false;
+
+            // 🎬 تطبيق فلتر الفيديو الجديد (عرض العقارات التي تحتوي على فيديو فقط)
+            if (filters.hasVideo === 'yes' && !p.video) return false;
             
             return true;
         });
@@ -93,8 +94,11 @@ export default function HomePage() {
     };
 
     const resetFilters = () => {
-        // تفريغ الفلاتر الجديدة أيضاً
-        setFilters({ searchID: '', type: '', compound: '', rooms: '', baths: '', minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', locations: [], share: '' });
+        setFilters({ 
+            searchID: '', type: '', compound: '', rooms: '', baths: '', 
+            minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', 
+            locations: [], share: '', transactionType: '', hasVideo: '' 
+        });
         setFilteredData(allData);
         setCurrentPage(1);
     };
@@ -130,7 +134,6 @@ export default function HomePage() {
                     {[...new Set(allData.map(p => p.type))].map(t => <option key={t}>{t}</option>)}
                 </select>
 
-                {/* قائمة الكمبوند المنسدلة */}
                 <select value={filters.compound} onChange={e => setFilters({...filters, compound: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">كل الكمبوندات</option>
                     {uniqueCompounds.map(c => <option key={c} value={c}>{c}</option>)}
@@ -140,6 +143,19 @@ export default function HomePage() {
                     <option value="">حالة المشاركة (الكل)</option>
                     <option value="yes">مشاركة فقط</option>
                     <option value="no">بدون مشاركة</option>
+                </select>
+
+                {/* 🎯 إضافة قائمة فلترة المطلوب والمعروض */}
+                <select value={filters.transactionType} onChange={e => setFilters({...filters, transactionType: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', fontWeight: 'bold' }}>
+                    <option value="">حالة العقار (معروض/مطلوب)</option>
+                    <option value="available">🛒 المعروضات فقط</option>
+                    <option value="required">🎯 الطلبات فقط (مطلوب)</option>
+                </select>
+
+                {/* 🎬 إضافة قائمة فلترة الفيديو */}
+                <select value={filters.hasVideo} onChange={e => setFilters({...filters, hasVideo: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                    <option value="">كل العقارات (بفيديو وبدون)</option>
+                    <option value="yes">🎬 عقارات بالفيديو فقط</option>
                 </select>
 
                 <div ref={dropdownRef} style={{ position: 'relative', minWidth: '150px' }}>
@@ -176,7 +192,6 @@ export default function HomePage() {
                 <input type="number" placeholder="من مساحة" value={filters.minArea} onChange={e => setFilters({...filters, minArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
                 <input type="number" placeholder="إلى مساحة" value={filters.maxArea} onChange={e => setFilters({...filters, maxArea: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '100px' }} />
 
-                {/* فلتر الغرف */}
                 <select value={filters.rooms} onChange={e => setFilters({...filters, rooms: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">الغرف (الكل)</option>
                     <option value="1">1+ غرفة</option>
@@ -186,7 +201,6 @@ export default function HomePage() {
                     <option value="5">5+ غرف</option>
                 </select>
 
-                {/* فلتر الحمامات */}
                 <select value={filters.baths} onChange={e => setFilters({...filters, baths: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">الحمامات (الكل)</option>
                     <option value="1">1+ حمام</option>
@@ -207,22 +221,49 @@ export default function HomePage() {
             <div style={{ display: 'grid', gap: '20px' }}>
                 {pageData.map(p => (
                     <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap:'15px' }}>
-                        <div>
-                            <h3 style={{ margin: '0 0 10px 0', color: '#333', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                                <span>{p.type} - {p.location}</span>
-                                
-                                {isPropertyShared(p.share) && (
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#e0f2ff', color: '#0056b3', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
-                                        <span style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
-                                        مشاركة
-                                    </span>
-                                )}
-                            </h3>
-                            {/* إضافة الغرف والحمامات في العرض لكي يراها العميل */}
-                            <p style={{ margin: '5px 0', color: '#555' }}>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م² {p.rooms > 0 && `| 🛏️ ${p.rooms} غرف`} {p.baths > 0 && `| 🛁 ${p.baths} حمام`}</p>
-                            {/* إظهار اسم الكمبوند إن وجد */}
-                            {p.compound && <p style={{ margin: '5px 0', color: '#28a745', fontWeight: 'bold' }}>🏘️ {p.compound}</p>}
+                        
+                        {/* 🖼️ الحاوية الذكية لدمج الـ Thumbnail بجوار نصوص العقار بدقة */}
+                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
+                            
+                            {/* عرض الصورة المصغرة إن وجدت سحابياً، أو وضع كارت بديل جذاب يحمل كود العقار */}
+                            {p.thumbnail ? (
+                                <img src={p.thumbnail} alt="Property Thumbnail" style={{ width: '130px', height: '95px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }} />
+                            ) : (
+                                <div style={{ width: '130px', height: '95px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#adb5bd', fontSize: '0.75rem', gap: '4px' }}>
+                                    <span>🏢 لا توجد ميديا</span>
+                                    <span style={{ fontSize: '0.65rem', background: '#e9ecef', padding: '2px 6px', borderRadius: '4px', color: '#495057' }}>ID: {p.id}</span>
+                                </div>
+                            )}
+
+                            <div>
+                                <h3 style={{ margin: '0 0 10px 0', color: '#333', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                                    <span>{p.type} - {p.location}</span>
+                                    
+                                    {/* 🎯 علامة مميزة وواضحة جداً أمام كل عقار "مطلوب" */}
+                                    {p.transaction_type === 'required' && (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#fff3cd', color: '#856404', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #ffeeba' }}>
+                                            <span style={{ width: '8px', height: '8px', backgroundColor: '#dc3545', borderRadius: '50%' }}></span>
+                                            🎯 مطلوب عاجل
+                                        </span>
+                                    )}
+
+                                    {isPropertyShared(p.share) && (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#e0f2ff', color: '#0056b3', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
+                                            <span style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></span>
+                                            مشاركة
+                                        </span>
+                                    )}
+
+                                    {/* 🎬 إضافة أيقونة بصرية خفيفة إذا كان العقار يمتلك فيديو يوتيوب */}
+                                    {p.video && (
+                                        <span style={{ fontSize: '1.1rem' }} title="يحتوي على فيديو يوتيوب">🎬</span>
+                                    )}
+                                </h3>
+                                <p style={{ margin: '5px 0', color: '#555' }}>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م² {p.rooms > 0 && `| 🛏️ ${p.rooms} غرف`} {p.baths > 0 && `| 🛁 ${p.baths} حمام`}</p>
+                                {p.compound && <p style={{ margin: '5px 0', color: '#28a745', fontWeight: 'bold' }}>🏘️ {p.compound}</p>}
+                            </div>
                         </div>
+
                         <Link href={`/property/${p.id}`} style={{ padding: '10px 20px', background: '#007bff', color: '#fff', textDecoration: 'none', borderRadius: '5px', fontWeight: 'bold' }}>
                             عرض التفاصيل
                         </Link>
