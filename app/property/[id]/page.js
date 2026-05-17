@@ -13,10 +13,9 @@ const isPropertyShared = (shareValue) => {
     return true; 
 };
 
-// الدالة الجديدة: لتحويل أي رابط نصي داخل الوصف إلى رابط قابل للضغط
+// الدالة لتحويل أي رابط نصي داخل الوصف إلى رابط قابل للضغط
 const renderDescriptionWithLinks = (text) => {
     if (!text) return null;
-    // رادار البحث عن الروابط
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = text.split(urlRegex);
     
@@ -77,6 +76,14 @@ export default async function PropertyPage({ params }) {
                     <h1 style={{ margin: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                         <span>{property.type}</span>
                         
+                        {/* 🎯 علامة المطلوب عاجل */}
+                        {property.transaction_type === 'required' && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#fff3cd', color: '#856404', padding: '6px 16px', borderRadius: '25px', fontSize: '0.9rem', fontWeight: 'bold', border: '1px solid #ffeeba' }}>
+                                <span style={{ width: '8px', height: '8px', backgroundColor: '#dc3545', borderRadius: '50%' }}></span>
+                                🎯 مطلوب عاجل
+                            </span>
+                        )}
+                        
                         {/* علامة المشاركة */}
                         {isPropertyShared(property.share) && (
                             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#e0f2ff', color: '#0056b3', padding: '6px 16px', borderRadius: '25px', fontSize: '0.9rem', fontWeight: 'bold', border: '1px solid #b3d7ff' }}>
@@ -99,6 +106,58 @@ export default async function PropertyPage({ params }) {
                     ID: {property.id}
                 </div>
             </div>
+
+            {/* 📸 معرض الصور والفيديو (Media Gallery) */}
+            {property.media_gallery && property.media_gallery.length > 0 && (
+                <div style={{ marginBottom: '30px', background: '#f8f9fa', padding: '15px', borderRadius: '12px', border: '1px solid #e9ecef' }}>
+                    <h3 style={{ margin: '0 0 15px 0', color: '#495057', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>📸</span> معرض الميديا ({property.media_gallery.length})
+                    </h3>
+                    
+                    {/* الحاوية المتجاوبة للسحب (Horizontal Scroll) */}
+                    <div style={{ 
+                        display: 'flex', 
+                        overflowX: 'auto', 
+                        gap: '15px', 
+                        paddingBottom: '10px',
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch'
+                    }}>
+                        {property.media_gallery.map((url, index) => {
+                            // التعرف الذكي على نوع الملف
+                            const isVideo = url.split('?')[0].toLowerCase().match(/\.(mp4|mov|avi|mkv|3gp)$/);
+                            
+                            return (
+                                <div key={index} style={{ 
+                                    flex: '0 0 85%', 
+                                    maxWidth: '350px', 
+                                    height: '220px', 
+                                    scrollSnapAlign: 'center',
+                                    borderRadius: '10px', 
+                                    overflow: 'hidden', 
+                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                    background: '#000',
+                                    position: 'relative'
+                                }}>
+                                    {isVideo ? (
+                                        <video controls preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'contain' }}>
+                                            <source src={url} />
+                                            متصفحك لا يدعم مشغل الفيديو.
+                                        </video>
+                                    ) : (
+                                        <a href={url} target="_blank" rel="noopener noreferrer" title="اضغط لتكبير الصورة">
+                                            <img src={url} alt={`صورة ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} />
+                                        </a>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <p style={{ textAlign: 'center', color: '#adb5bd', fontSize: '0.85rem', margin: '10px 0 0 0' }}>
+                        👈 اسحب يميناً ويساراً لتصفح الميديا 👉
+                    </p>
+                </div>
+            )}
 
             {/* قسم ملخص البيانات */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', background: '#f8f9fa', padding: '20px', borderRadius: '10px', marginBottom: '20px' }}>
@@ -126,7 +185,7 @@ export default async function PropertyPage({ params }) {
                 )}
             </div>
 
-            {/* تم تحديث هذا الجزء ليقرأ الروابط باستخدام الدالة الجديدة */}
+            {/* وصف العقار */}
             <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', fontSize: '1.1rem', color: '#444', marginBottom: '20px' }}>
                 {renderDescriptionWithLinks(property.description)}
             </div>
@@ -154,9 +213,11 @@ export default async function PropertyPage({ params }) {
                 </a>
             </div>
 
+            {/* زر الفيديو الاحتياطي (للروابط القديمة من جوجل درايف) */}
             {property.video && property.video.startsWith('http') && (
                 <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '20px' }}>
-                    <a href={property.video} target="_blank" style={{
+                    <a href={property.video} target="_blank" rel="noopener noreferrer" style={{
+                        display: 'inline-block',
                         padding: '15px 40px',
                         background: '#e91e63',
                         color: 'white',
@@ -166,7 +227,7 @@ export default async function PropertyPage({ params }) {
                         fontWeight: 'bold',
                         boxShadow: '0 4px 10px rgba(233, 30, 99, 0.3)'
                     }}>
-                        🎥 مشاهدة الفيديو أو الصور
+                        🎥 مشاهدة الفيديو (Google Drive)
                     </a>
                 </div>
             )}
