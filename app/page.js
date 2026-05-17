@@ -7,7 +7,6 @@ export default function HomePage() {
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     
-    // 1. تحديث متغيرات الفلاتر لتشمل الفلترين الجديدين (transactionType, hasVideo)
     const [filters, setFilters] = useState({ 
         searchID: '', type: '', compound: '', rooms: '', baths: '', 
         minPrice: '', maxPrice: '', minArea: '', maxArea: '', text: '', 
@@ -16,7 +15,6 @@ export default function HomePage() {
     
     const [isLocationOpen, setIsLocationOpen] = useState(false);
     const dropdownRef = useRef(null);
-    
     const perPage = 10;
 
     useEffect(() => {
@@ -80,11 +78,10 @@ export default function HomePage() {
             if (filters.share === 'yes' && !isShared) return false;
             if (filters.share === 'no' && isShared) return false;
             
-            // 🎯 تطبيق فلتر نوع المعاملة الجديد (متاح / مطلوب)
             if (filters.transactionType && p.transaction_type !== filters.transactionType) return false;
 
-            // 🎬 تطبيق فلتر الفيديو الجديد (عرض العقارات التي تحتوي على فيديو فقط)
-            if (filters.hasVideo === 'yes' && !p.video) return false;
+            // 🎯 الفلتر الموحد الجديد (يقرأ الحقل المدمج من البايثون)
+            if (filters.hasVideo === 'yes' && !p.has_video) return false;
             
             return true;
         });
@@ -145,14 +142,12 @@ export default function HomePage() {
                     <option value="no">بدون مشاركة</option>
                 </select>
 
-                {/* 🎯 إضافة قائمة فلترة المطلوب والمعروض */}
                 <select value={filters.transactionType} onChange={e => setFilters({...filters, transactionType: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px', fontWeight: 'bold' }}>
                     <option value="">حالة العقار (معروض/مطلوب)</option>
                     <option value="available">🛒 المعروضات فقط</option>
                     <option value="required">🎯 الطلبات فقط (مطلوب)</option>
                 </select>
 
-                {/* 🎬 إضافة قائمة فلترة الفيديو */}
                 <select value={filters.hasVideo} onChange={e => setFilters({...filters, hasVideo: e.target.value})} style={{ padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
                     <option value="">كل العقارات (بفيديو وبدون)</option>
                     <option value="yes">🎬 عقارات بالفيديو فقط</option>
@@ -222,12 +217,16 @@ export default function HomePage() {
                 {pageData.map(p => (
                     <div key={p.id} style={{ background: '#fff', padding: '20px', borderRadius: '10px', border: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap:'15px' }}>
                         
-                        {/* 🖼️ الحاوية الذكية لدمج الـ Thumbnail بجوار نصوص العقار بدقة */}
                         <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
                             
-                            {/* عرض الصورة المصغرة إن وجدت سحابياً، أو وضع كارت بديل جذاب يحمل كود العقار */}
+                            {/* 🎯 منطق عرض الصورة أو الفيديو الذكي */}
                             {p.thumbnail ? (
-                                <img src={p.thumbnail} alt="Property Thumbnail" style={{ width: '130px', height: '95px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }} />
+                                <img src={p.thumbnail} alt={`عقار ${p.id}`} style={{ width: '130px', height: '95px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #eee' }} />
+                            ) : p.has_video ? (
+                                <div style={{ width: '130px', height: '95px', background: '#e9ecef', borderRadius: '8px', border: '1px solid #ddd', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#495057', fontSize: '0.8rem', gap: '5px' }}>
+                                    <span style={{ fontSize: '1.5rem' }}>🎬</span>
+                                    <span style={{ fontWeight: 'bold' }}>فيديو متاح</span>
+                                </div>
                             ) : (
                                 <div style={{ width: '130px', height: '95px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#adb5bd', fontSize: '0.75rem', gap: '4px' }}>
                                     <span>🏢 لا توجد ميديا</span>
@@ -239,7 +238,6 @@ export default function HomePage() {
                                 <h3 style={{ margin: '0 0 10px 0', color: '#333', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                                     <span>{p.type} - {p.location}</span>
                                     
-                                    {/* 🎯 علامة مميزة وواضحة جداً أمام كل عقار "مطلوب" */}
                                     {p.transaction_type === 'required' && (
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#fff3cd', color: '#856404', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #ffeeba' }}>
                                             <span style={{ width: '8px', height: '8px', backgroundColor: '#dc3545', borderRadius: '50%' }}></span>
@@ -254,9 +252,8 @@ export default function HomePage() {
                                         </span>
                                     )}
 
-                                    {/* 🎬 إضافة أيقونة بصرية خفيفة إذا كان العقار يمتلك فيديو يوتيوب */}
-                                    {p.video && (
-                                        <span style={{ fontSize: '1.1rem' }} title="يحتوي على فيديو يوتيوب">🎬</span>
+                                    {p.has_video && (
+                                        <span style={{ fontSize: '1.1rem' }} title="يحتوي على فيديو">🎬</span>
                                     )}
                                 </h3>
                                 <p style={{ margin: '5px 0', color: '#555' }}>💰 {p.price.toLocaleString()} ج.م | 📏 {p.area} م² {p.rooms > 0 && `| 🛏️ ${p.rooms} غرف`} {p.baths > 0 && `| 🛁 ${p.baths} حمام`}</p>
